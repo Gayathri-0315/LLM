@@ -1,0 +1,6 @@
+MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
+
+MAX_NEW_TOKENS = 150
+TEMPERATURE = 0.7
+TOP_P = 0.9
+REPETITION_PENALTY = 1.1
