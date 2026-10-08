@@ -1,4 +1,4 @@
-MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
+MODEL_ID = "mistral:7b-instruct-v0.2-q4_K_M"
 
 MAX_NEW_TOKENS = 150
 TEMPERATURE = 0.7

@@ -1,5 +1,6 @@
 from model import load_model
 from chat import generate_response
+from memory import remember
 
 
 def main():
@@ -10,10 +11,11 @@ def main():
 
     print("\nLoading model...\n")
 
-    tokenizer, model = load_model()
+    model = load_model()
 
     print("\nLLM is ready!")
-    print("Type 'exit' to stop.\n")
+    print("Type 'exit' to stop.")
+    print("Use /remember key=value to save something.\n")
 
     conversation = [
         {
@@ -29,15 +31,35 @@ Answer clearly and naturally."""
 
     while True:
 
-        user_input = input("You: ")
+        user_input = input("You: ").strip()
 
         if user_input.lower() == "exit":
             print("\nChat ended.")
             break
 
+        if user_input.startswith("/remember "):
+
+            data = user_input[len("/remember "):]
+
+            if "=" not in data:
+                print("Use: /remember key=value\n")
+                continue
+
+            key, value = data.split("=", 1)
+
+            key = key.strip()
+            value = value.strip()
+
+            if key and value:
+                remember(key, value)
+                print(f"Memory saved: {key} = {value}\n")
+            else:
+                print("Both key and value are required.\n")
+
+            continue
+
         response = generate_response(
             user_input,
-            tokenizer,
             model,
             conversation
         )

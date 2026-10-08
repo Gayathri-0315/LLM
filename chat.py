@@ -1,4 +1,4 @@
-import torch
+import ollama
 
 from config import (
     MAX_NEW_TOKENS,
@@ -7,52 +7,44 @@ from config import (
     REPETITION_PENALTY
 )
 
+from memory import get_memory_context
+
 
 def generate_response(
     message,
-    tokenizer,
     model,
     conversation
 ):
+
+    memory_context = get_memory_context()
+
+    if memory_context:
+        conversation.append({
+            "role": "system",
+            "content": memory_context
+        })
 
     conversation.append({
         "role": "user",
         "content": message
     })
 
-    inputs = tokenizer.apply_chat_template(
-        conversation,
-        return_tensors="pt",
-        add_generation_prompt=True
+    response = ollama.chat(
+        model=model,
+        messages=conversation,
+        options={
+            "num_predict": MAX_NEW_TOKENS,
+            "temperature": TEMPERATURE,
+            "top_p": TOP_P,
+            "repeat_penalty": REPETITION_PENALTY
+        }
     )
 
-    inputs = {
-        key: value.to(model.device)
-        for key, value in inputs.items()
-    }
-
-    with torch.no_grad():
-
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=MAX_NEW_TOKENS,
-            temperature=TEMPERATURE,
-            top_p=TOP_P,
-            do_sample=True,
-            repetition_penalty=REPETITION_PENALTY,
-            pad_token_id=tokenizer.eos_token_id
-        )
-
-    input_length = inputs["input_ids"].shape[1]
-
-    response = tokenizer.decode(
-        outputs[0][input_length:],
-        skip_special_tokens=True
-    ).strip()
+    answer = response["message"]["content"].strip()
 
     conversation.append({
         "role": "assistant",
-        "content": response
+        "content": answer
     })
 
-    return response
+    return answer
